@@ -71,6 +71,24 @@ picks up the new `main.js`.
   stored locally in the vault's plugin data on this machine; treat it like a
   password and don't sync it to a shared vault.
 
+## Network use & privacy
+
+This plugin makes network requests **only to the Annotex server URL you configure**
+— no other remote services, no third parties, and **no analytics or telemetry** of
+any kind.
+
+- **On publish** it sends the current note's Markdown to your server
+  (`PUT /api/documents/…`), authenticated with your admin token.
+- **On open / sync** it fetches that note's annotations from your server
+  (`GET /api/annotations/…`) to mirror them into the vault.
+
+Nothing is sent anywhere else. The plugin is a companion to a **self-hosted Annotex
+server that you run and control**, and does nothing until you point it at one.
+
+**Required configuration (disclosure):** the plugin needs an Annotex **server URL**
+and an **admin token** to function. It only reads/writes files **inside your vault**
+(the note it publishes, and a `<note>.annotex.json` mirror beside it) — never outside.
+
 ## Use
 
 Open a note → run **"Publish current note to Annotex"** (Command palette, or the

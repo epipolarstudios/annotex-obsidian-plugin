@@ -27,6 +27,11 @@ function cleanWikilinks(md: string): string {
     .replace(/\[\[([^\]]+)\]\]/g, '$1');                    // [[X]] -> X
 }
 
+// Readable message from an unknown thrown value (avoids `any` in catch blocks).
+function errMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
 export default class AnnotexPublishPlugin extends Plugin {
   settings: AnnotexSettings = DEFAULT_SETTINGS;
 
@@ -69,7 +74,7 @@ export default class AnnotexPublishPlugin extends Plugin {
     let docId = this.frontmatterValue(file, 'annotex-doc');
     if (!docId) {
       docId = slugify(file.basename);
-      await this.app.fileManager.processFrontMatter(file, (fm) => { fm['annotex-doc'] = docId; });
+      await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => { fm['annotex-doc'] = docId; });
     }
     const title = this.frontmatterValue(file, 'title') || file.basename;
     const raw = await this.app.vault.read(file);
@@ -84,18 +89,18 @@ export default class AnnotexPublishPlugin extends Plugin {
         body: JSON.stringify({ title, markdown }),
         throw: false,
       });
+      const body = resp.json as { error?: string; url?: string } | undefined;
       if (resp.status < 200 || resp.status >= 300) {
-        const err = (resp.json && resp.json.error) || `HTTP ${resp.status}`;
-        new Notice(`Publish failed: ${err}`, 8000);
+        new Notice(`Publish failed: ${body?.error || `HTTP ${resp.status}`}`, 8000);
         return;
       }
-      const url = (resp.json && resp.json.url) || `${base}/n/${encodeURIComponent(docId)}`;
+      const url = body?.url || `${base}/n/${encodeURIComponent(docId)}`;
       try { await navigator.clipboard.writeText(url); } catch { /* clipboard may be unavailable */ }
       new Notice(`Published ✓  Link copied to clipboard:\n${url}`, 10000);
       // Pull any existing comments down beside the note right away.
       await this.syncToVault(file, docId, false).catch(() => {});
-    } catch (e: any) {
-      new Notice(`Publish failed: ${e?.message ?? e}`, 8000);
+    } catch (e) {
+      new Notice(`Publish failed: ${errMessage(e)}`, 8000);
     }
   }
 
@@ -141,14 +146,14 @@ export default class AnnotexPublishPlugin extends Plugin {
         if (notice) new Notice(`Sync failed: HTTP ${resp.status}`, 6000);
         return;
       }
-      const annotations = Array.isArray(resp.json) ? resp.json : [];
+      const annotations: unknown[] = Array.isArray(resp.json) ? (resp.json as unknown[]) : [];
       const adapter = this.app.vault.adapter;
 
       // Skip the write when the annotation payload is unchanged (ignore our own
       // volatile metadata like syncedAt when comparing).
-      let prev: any = null;
+      let prev: { annotations?: unknown } | null = null;
       if (await adapter.exists(path)) {
-        try { prev = JSON.parse(await adapter.read(path)); } catch { /* rewrite a corrupt sidecar */ }
+        try { prev = JSON.parse(await adapter.read(path)) as { annotations?: unknown }; } catch { /* rewrite a corrupt sidecar */ }
       }
       const same = prev && JSON.stringify(prev.annotations ?? null) === JSON.stringify(annotations);
       if (same) { if (notice) new Notice(`Annotations already up to date (${annotations.length}).`); return; }
@@ -164,18 +169,18 @@ export default class AnnotexPublishPlugin extends Plugin {
       };
       await adapter.write(path, JSON.stringify(sidecar, null, 2));
       if (notice) new Notice(`Synced ${annotations.length} annotation(s) to ${path}`, 6000);
-    } catch (e: any) {
-      if (notice) new Notice(`Sync failed: ${e?.message ?? e}`, 6000);
+    } catch (e) {
+      if (notice) new Notice(`Sync failed: ${errMessage(e)}`, 6000);
     }
   }
 
   frontmatterValue(file: TFile, key: string): string | undefined {
     const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
-    const v = fm?.[key];
+    const v: unknown = fm?.[key];
     return typeof v === 'string' && v.trim() ? v.trim() : undefined;
   }
 
-  async loadSettings() { this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()); }
+  async loadSettings() { this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<AnnotexSettings>); }
   async saveSettings() { await this.saveData(this.settings); }
 }
 

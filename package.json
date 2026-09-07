@@ -1,6 +1,6 @@
 {
   "name": "annotex-publish",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Publish Obsidian notes to Annotex.",
   "type": "module",
   "scripts": {

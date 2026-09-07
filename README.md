@@ -1,9 +1,13 @@
 # Annotex — Obsidian plugin
 
-Publish the note you're editing to your self-hosted [Annotex](../README.md) server
-with one command. Invited colleagues open the link, read the rendered note, and
-leave inline, anchored comments (with LaTeX). The note's Markdown — including
-`$math$` — is rendered on the server and gets the Annotex comment layer + KaTeX.
+Publish the note you're editing to your **self-hosted Annotex server** with one
+command. Invited colleagues open the link, read the rendered note, and leave
+inline, anchored comments (with LaTeX). The note's Markdown — including `$math$` —
+is rendered on the server and gets the Annotex comment layer + KaTeX.
+
+> **This plugin needs an Annotex server** — it's a companion to one you run
+> yourself, and does nothing until you point it at your server's URL. See the
+> **Configure** and **Network use & privacy** sections below.
 
 ## What it does
 
@@ -61,11 +65,15 @@ Then copy `manifest.json` + `main.js` into
 
 **Settings → Annotex:**
 
-- **Annotex server URL** — e.g. `https://annotex.example.com`
-- **Admin token** — your server's `ADMIN_TOKEN` (from its `.env.production`).
-  Publishing uses the admin API, so this token authors on your behalf. It's
-  stored locally in the vault's plugin data on this machine; treat it like a
-  password and don't sync it to a shared vault.
+- **Annotex server URL** — the base URL of your Annotex server, e.g.
+  `https://annotex.example.com`.
+- **Publish token** — generate one in your server's **admin panel**
+  (`/admin` → *Publish tokens* → *Generate*) and paste it here. It authorises
+  **publishing only** (not managing access) — safer than your master admin token.
+  The plugin keeps it **in this vault's plugin data, on the device running
+  Obsidian** — it's only ever sent to your server, never anywhere else. Treat it
+  like a password; don't sync it to a shared vault. (Your master `ADMIN_TOKEN`
+  also works here, but a scoped publish token is preferred.)
 
 ## Network use & privacy
 
@@ -74,7 +82,7 @@ This plugin makes network requests **only to the Annotex server URL you configur
 any kind.
 
 - **On publish** it sends the current note's Markdown to your server
-  (`PUT /api/documents/…`), authenticated with your admin token.
+  (`PUT /api/documents/…`), authenticated with your publish token.
 - **On open / sync** it fetches that note's annotations from your server
   (`GET /api/annotations/…`) to mirror them into the vault.
 
@@ -82,7 +90,7 @@ Nothing is sent anywhere else. The plugin is a companion to a **self-hosted Anno
 server that you run and control**, and does nothing until you point it at one.
 
 **Required configuration (disclosure):** the plugin needs an Annotex **server URL**
-and an **admin token** to function. It only reads/writes files **inside your vault**
+and a **publish token** to function. It only reads/writes files **inside your vault**
 (the note it publishes, and a `<note>.annotex.json` mirror beside it) — never outside.
 
 ## Use

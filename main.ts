@@ -3,7 +3,7 @@ import type { SettingDefinitionItem } from 'obsidian';
 
 interface AnnotexSettings {
   serverUrl: string;   // e.g. https://annotex.example.com
-  adminToken: string;  // the Annotex ADMIN_TOKEN (this machine authors as admin)
+  adminToken: string;  // a publish token (preferred) or the master ADMIN_TOKEN; sent as x-admin-token
 }
 const DEFAULT_SETTINGS: AnnotexSettings = { serverUrl: '', adminToken: '' };
 
@@ -66,7 +66,7 @@ export default class AnnotexPublishPlugin extends Plugin {
 
     const base = this.settings.serverUrl.replace(/\/+$/, '');
     if (!base || !this.settings.adminToken) {
-      new Notice('Set your Annotex server URL and admin token in Settings → Annotex.');
+      new Notice('Set your Annotex server URL and publish token in Settings → Annotex.');
       return;
     }
 
@@ -191,10 +191,10 @@ class AnnotexSettingTab extends PluginSettingTab {
 
   // Declarative settings (Obsidian 1.13+) so entries show up in settings search.
   // `serverUrl` binds automatically to this.plugin.settings via the default
-  // getControlValue/setControlValue; the admin token uses a render callback so its
+  // getControlValue/setControlValue; the token uses a render callback so its
   // input can be masked (the declarative text control can't mask input).
   getSettingDefinitions(): SettingDefinitionItem[] {
-    const tokenDesc = "Your Annotex ADMIN_TOKEN (from the server's .env.production). Stored locally on this machine.";
+    const tokenDesc = "Generate one in your Annotex server's admin panel (/admin → Publish tokens → Generate) and paste it here. It authorises publishing only — safer than your admin token. The plugin keeps it in this vault's data on this device (only ever sent to your server). Treat it like a password.";
     return [
       {
         name: 'Annotex server URL',
@@ -202,11 +202,12 @@ class AnnotexSettingTab extends PluginSettingTab {
         control: { type: 'text', key: 'serverUrl', placeholder: 'https://annotex.example.com' },
       },
       {
-        name: 'Admin token',
+        name: 'Publish token',
         desc: tokenDesc,
+        aliases: ['admin token'],
         render: (setting: Setting) => {
-          setting.setName('Admin token').setDesc(tokenDesc).addText((t) => {
-            t.setPlaceholder('paste ADMIN_TOKEN')
+          setting.setName('Publish token').setDesc(tokenDesc).addText((t) => {
+            t.setPlaceholder('paste a publish token')
               .setValue(this.plugin.settings.adminToken)
               .onChange(async (v) => { this.plugin.settings.adminToken = v; await this.plugin.saveSettings(); });
             t.inputEl.type = 'password';

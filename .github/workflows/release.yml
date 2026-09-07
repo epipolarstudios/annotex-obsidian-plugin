@@ -1,5 +1,6 @@
-# Build main.js and attach it (+ manifest.json) to a GitHub Release.
-# Trigger: push a tag equal to the manifest version, e.g.  git tag 0.2.0 && git push origin 0.2.0
+# Build main.js and attach it (+ manifest.json) to a GitHub Release,
+# with a signed build-provenance attestation for main.js.
+# Trigger: push a tag equal to the manifest version, e.g.  git tag 0.2.4 && git push origin 0.2.4
 # Obsidian requires the release TAG to exactly match manifest.json "version" (no leading "v").
 name: Release Obsidian plugin
 on:
@@ -7,7 +8,9 @@ on:
     tags:
       - '*'
 permissions:
-  contents: write
+  contents: write        # create the release
+  id-token: write        # sign the attestation
+  attestations: write    # record the attestation
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -18,6 +21,10 @@ jobs:
           node-version: '20'
       - run: npm install
       - run: npm run build
+      - name: Attest build provenance for main.js
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'main.js'
       - name: Create release with plugin assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

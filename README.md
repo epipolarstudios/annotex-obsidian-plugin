@@ -22,44 +22,40 @@ leave inline, anchored comments (with LaTeX). The note's Markdown — including
   stays the live hub colleagues comment against in real time; the sidecar is your
   owned, offline copy of it.
 
-## Install (manual, until it's in the community store)
+## Install
 
-A plugin is just two files in your vault: `manifest.json` and `main.js`, placed
-in `<vault>/.obsidian/plugins/annotex-publish/`. Pick whichever path fits the
-machine.
+Once it's in the **Community Plugins** store, install it the normal way: Obsidian →
+**Settings → Community plugins → Browse** → search **Annotex Publish** → Install →
+Enable. Until then, use one of the manual options below.
 
-### A. On a machine with the repo + Node (build & install in one step)
+### Option A — from the latest release (no build tools needed)
+
+1. Download **`manifest.json`** and **`main.js`** from the
+   [latest release](https://github.com/epipolarstudios/annotex-obsidian-plugin/releases/latest).
+2. In your vault, create the folder `<vault>/.obsidian/plugins/annotex-publish/`
+   and put both files in it. (`.obsidian` is hidden — on macOS press
+   **Cmd-Shift-.** in Finder to show hidden folders.)
+3. In Obsidian: **Settings → Community plugins → Reload**, then enable
+   **Annotex Publish**.
+
+### Option B — via BRAT (auto-updates from this repo)
+
+Install the **BRAT** community plugin, then **Add beta plugin** →
+`epipolarstudios/annotex-obsidian-plugin`. BRAT tracks new releases for you.
+
+### Option C — build from source
 
 ```
-cd obsidian-plugin
-./install-local.sh "/path/to/your/vault"
+git clone https://github.com/epipolarstudios/annotex-obsidian-plugin
+cd annotex-obsidian-plugin
+npm install && npm run build      # produces main.js
 ```
 
-That runs `npm install`, builds `main.js`, and copies `manifest.json` + `main.js`
-into the vault's plugin folder. (The vault is the folder that contains a
-`.obsidian` directory.)
+Then copy `manifest.json` + `main.js` into
+`<vault>/.obsidian/plugins/annotex-publish/` and reload + enable as in Option A.
 
-### B. On a machine with no build tools (e.g. your Mac)
-
-You don't need Node or the repo there — just copy the two prebuilt files:
-
-1. Grab `manifest.json` and `main.js` — either from a built `obsidian-plugin/`
-   (run `npm run build` once on any machine) or from the release zip.
-2. Make the folder `<vault>/.obsidian/plugins/annotex-publish/` and drop both
-   files in. (`.obsidian` is hidden — in Finder press **Cmd-Shift-.** to show it,
-   or use **Go → Go to Folder**.)
-
-> Copying between machines over SSH, e.g. onto a Mac from this server:
-> ```
-> scp <server>:~/projects/obsidian_inline_commentor/obsidian-plugin/{manifest.json,main.js} \
->   "~/Documents/<Your Vault>/.obsidian/plugins/annotex-publish/"
-> ```
-
-### Then, in Obsidian (either path)
-
-**Settings → Community plugins → Reload** (toggle it off/on if it was already
-enabled), then enable **Annotex Publish**. After an update, reloading is what
-picks up the new `main.js`.
+> After any manual update, **Settings → Community plugins → Reload** (or toggle the
+> plugin off/on) is what picks up the new `main.js`.
 
 ## Configure
 

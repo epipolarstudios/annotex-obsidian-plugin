@@ -1,9 +1,9 @@
 {
   "id": "annotex-publish",
   "name": "Annotex",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "minAppVersion": "1.13.0",
-  "description": "Publish the current note to your self-hosted Annotex server so invited colleagues can read it and leave inline, anchored comments.",
+  "description": "Share notes to your self-hosted Annotex server for collaborative annotation — invited colleagues highlight text and leave inline, anchored comments (with LaTeX) for review and feedback on your published notes.",
   "author": "Epipolar Studios",
   "authorUrl": "https://epipolar.ca",
   "fundingUrl": {

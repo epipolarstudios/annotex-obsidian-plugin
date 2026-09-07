@@ -52,9 +52,9 @@ assets. The release.yml here does that automatically.
    ```json
    {
      "id": "annotex-publish",
-     "name": "Annotex Publish",
+     "name": "Annotex",
      "author": "Epipolar Studios",
-     "description": "Publish the current note to your self-hosted Annotex server so invited colleagues can leave inline, anchored comments.",
+     "description": "Share notes to your self-hosted Annotex server for collaborative annotation — invited colleagues highlight text and leave inline, anchored comments (with LaTeX) for review and feedback on your published notes.",
      "repo": "epipolarstudios/annotex-obsidian-plugin"
    }
    ```

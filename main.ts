@@ -1,4 +1,5 @@
 import { App, Notice, Plugin, PluginSettingTab, Setting, TFile, requestUrl } from 'obsidian';
+import type { SettingDefinitionItem } from 'obsidian';
 
 interface AnnotexSettings {
   serverUrl: string;   // e.g. https://annotex.example.com
@@ -188,32 +189,30 @@ class AnnotexSettingTab extends PluginSettingTab {
   plugin: AnnotexPublishPlugin;
   constructor(app: App, plugin: AnnotexPublishPlugin) { super(app, plugin); this.plugin = plugin; }
 
-  display(): void {
-    const { containerEl } = this;
-    containerEl.empty();
-
-    new Setting(containerEl)
-      .setName('Annotex server URL')
-      .setDesc('The base URL of your Annotex instance, e.g. https://annotex.example.com')
-      .addText((t) => t
-        .setPlaceholder('https://annotex.example.com')
-        .setValue(this.plugin.settings.serverUrl)
-        .onChange(async (v) => { this.plugin.settings.serverUrl = v; await this.plugin.saveSettings(); }));
-
-    new Setting(containerEl)
-      .setName('Admin token')
-      .setDesc('Your Annotex ADMIN_TOKEN (from the server\'s .env.production). Stored locally on this machine.')
-      .addText((t) => {
-        t.setPlaceholder('paste ADMIN_TOKEN')
-          .setValue(this.plugin.settings.adminToken)
-          .onChange(async (v) => { this.plugin.settings.adminToken = v; await this.plugin.saveSettings(); });
-        t.inputEl.type = 'password';
-      });
-
-    containerEl.createEl('p', {
-      text: 'Publish a note with the command "Publish current note to Annotex" (or the ribbon icon). '
-        + 'The share link is copied to your clipboard; send it to invited colleagues.',
-      cls: 'setting-item-description',
-    });
+  // Declarative settings (Obsidian 1.13+) so entries show up in settings search.
+  // `serverUrl` binds automatically to this.plugin.settings via the default
+  // getControlValue/setControlValue; the admin token uses a render callback so its
+  // input can be masked (the declarative text control can't mask input).
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    const tokenDesc = "Your Annotex ADMIN_TOKEN (from the server's .env.production). Stored locally on this machine.";
+    return [
+      {
+        name: 'Annotex server URL',
+        desc: 'The base URL of your Annotex instance, e.g. https://annotex.example.com',
+        control: { type: 'text', key: 'serverUrl', placeholder: 'https://annotex.example.com' },
+      },
+      {
+        name: 'Admin token',
+        desc: tokenDesc,
+        render: (setting: Setting) => {
+          setting.setName('Admin token').setDesc(tokenDesc).addText((t) => {
+            t.setPlaceholder('paste ADMIN_TOKEN')
+              .setValue(this.plugin.settings.adminToken)
+              .onChange(async (v) => { this.plugin.settings.adminToken = v; await this.plugin.saveSettings(); });
+            t.inputEl.type = 'password';
+          });
+        },
+      },
+    ];
   }
 }

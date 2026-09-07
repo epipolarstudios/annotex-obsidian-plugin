@@ -1,7 +1,7 @@
 {
   "id": "annotex-publish",
-  "name": "Annotex Publish",
-  "version": "0.2.4",
+  "name": "Annotex",
+  "version": "0.2.5",
   "minAppVersion": "1.13.0",
   "description": "Publish the current note to your self-hosted Annotex server so invited colleagues can read it and leave inline, anchored comments.",
   "author": "Epipolar Studios",

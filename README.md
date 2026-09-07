@@ -1,4 +1,4 @@
-# Annotex Publish — Obsidian plugin
+# Annotex — Obsidian plugin
 
 Publish the note you're editing to your self-hosted [Annotex](../README.md) server
 with one command. Invited colleagues open the link, read the rendered note, and
@@ -7,7 +7,7 @@ leave inline, anchored comments (with LaTeX). The note's Markdown — including
 
 ## What it does
 
-- Adds a command **"Publish current note to Annotex"** (and a ribbon icon).
+- Adds a command **"Publish current note"** (and a ribbon icon).
 - Renders the current note on your server at `https://<your-server>/n/<docId>` and
   copies the share link to your clipboard.
 - Gives each note a stable `docId` (stored in frontmatter as `annotex-doc`), so
@@ -25,7 +25,7 @@ leave inline, anchored comments (with LaTeX). The note's Markdown — including
 ## Install
 
 Once it's in the **Community Plugins** store, install it the normal way: Obsidian →
-**Settings → Community plugins → Browse** → search **Annotex Publish** → Install →
+**Settings → Community plugins → Browse** → search **Annotex** → Install →
 Enable. Until then, use one of the manual options below.
 
 ### Option A — from the latest release (no build tools needed)
@@ -36,7 +36,7 @@ Enable. Until then, use one of the manual options below.
    and put both files in it. (`.obsidian` is hidden — on macOS press
    **Cmd-Shift-.** in Finder to show hidden folders.)
 3. In Obsidian: **Settings → Community plugins → Reload**, then enable
-   **Annotex Publish**.
+   **Annotex**.
 
 ### Option B — via BRAT (auto-updates from this repo)
 
@@ -59,7 +59,7 @@ Then copy `manifest.json` + `main.js` into
 
 ## Configure
 
-**Settings → Annotex Publish:**
+**Settings → Annotex:**
 
 - **Annotex server URL** — e.g. `https://annotex.example.com`
 - **Admin token** — your server's `ADMIN_TOKEN` (from its `.env.production`).
@@ -87,14 +87,14 @@ and an **admin token** to function. It only reads/writes files **inside your vau
 
 ## Use
 
-Open a note → run **"Publish current note to Annotex"** (Command palette, or the
+Open a note → run **"Publish current note"** (Command palette, or the
 ribbon icon) → the share link is copied to your clipboard. Send it to an invited
 colleague (add them first in the Annotex admin panel). Edit and re-publish any
 time; the link and its comments stay.
 
 ## Support
 
-If Annotex Publish is useful to you, you can support development:
+If Annotex is useful to you, you can support development:
 
 <a href="https://www.buymeacoffee.com/epipolar_studios" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50" width="210"></a>
 

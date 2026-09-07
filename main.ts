@@ -41,7 +41,7 @@ export default class AnnotexPublishPlugin extends Plugin {
 
     this.addCommand({
       id: 'publish-to-annotex',
-      name: 'Publish current note to Annotex',
+      name: 'Publish current note',
       callback: () => this.publishActive(),
     });
     this.addCommand({
@@ -66,7 +66,7 @@ export default class AnnotexPublishPlugin extends Plugin {
 
     const base = this.settings.serverUrl.replace(/\/+$/, '');
     if (!base || !this.settings.adminToken) {
-      new Notice('Set your Annotex server URL and admin token in Settings → Annotex Publish.');
+      new Notice('Set your Annotex server URL and admin token in Settings → Annotex.');
       return;
     }
 

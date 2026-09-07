@@ -96,6 +96,12 @@ ribbon icon) → the share link is copied to your clipboard. Send it to an invit
 colleague (add them first in the Annotex admin panel). Edit and re-publish any
 time; the link and its comments stay.
 
+## Support
+
+If Annotex Publish is useful to you, you can support development:
+
+<a href="https://www.buymeacoffee.com/epipolar_studios" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50" width="210"></a>
+
 ## Notes & limits (v0.2)
 
 - The `<note>.annotex.json` sidecar is currently a **one-way mirror** (server →

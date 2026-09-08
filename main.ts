@@ -33,6 +33,26 @@ function errMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
+const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|svg)$/i;
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('image decode failed'));
+    img.src = src;
+  });
+}
+
+function arrayBufferToBase64(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    s += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 0x8000)));
+  }
+  return btoa(s);
+}
+
 export default class AnnotexPublishPlugin extends Plugin {
   settings: AnnotexSettings = DEFAULT_SETTINGS;
 
@@ -79,7 +99,8 @@ export default class AnnotexPublishPlugin extends Plugin {
     }
     const title = this.frontmatterValue(file, 'title') || file.basename;
     const raw = await this.app.vault.read(file);
-    const markdown = cleanWikilinks(stripFrontmatter(raw));
+    // Inline local images BEFORE cleanWikilinks (which drops ![[...]] embeds).
+    const markdown = cleanWikilinks(await this.embedImages(stripFrontmatter(raw), file));
 
     new Notice(`Publishing “${title}”…`);
     try {
@@ -102,6 +123,73 @@ export default class AnnotexPublishPlugin extends Plugin {
       await this.syncToVault(file, docId, false).catch(() => {});
     } catch (e) {
       new Notice(`Publish failed: ${errMessage(e)}`, 8000);
+    }
+  }
+
+  // Inline local images as (resized, compressed) data URIs so the published page
+  // is self-contained — the server has no copy of the vault's image files.
+  // Handles ![alt](path) and Obsidian ![[path]] embeds; leaves http(s)/data URLs.
+  async embedImages(markdown: string, noteFile: TFile): Promise<string> {
+    const resolve = (linkpath: string): TFile | null => {
+      const clean = decodeURIComponent(linkpath.split('#')[0].split('|')[0].trim());
+      const viaLink = this.app.metadataCache.getFirstLinkpathDest(clean, noteFile.path);
+      if (viaLink instanceof TFile) return viaLink;
+      const folder = noteFile.parent ? noteFile.parent.path : '';
+      const rel = folder ? `${folder}/${clean}` : clean;
+      const f = this.app.vault.getAbstractFileByPath(rel) || this.app.vault.getAbstractFileByPath(clean);
+      return f instanceof TFile ? f : null;
+    };
+
+    type Repl = { from: string; to: string };
+    const jobs: Array<Promise<Repl | null>> = [];
+    const queue = (fullMatch: string, linkpath: string, alt: string) => {
+      const p = linkpath.split('#')[0].split('|')[0].trim();
+      if (/^(https?:|data:)/i.test(p)) return;   // remote / already-embedded
+      if (!IMAGE_EXT.test(p)) return;            // e.g. a note embed, not an image
+      const file = resolve(linkpath);
+      if (!file) return;
+      jobs.push(this.imageToDataUrl(file)
+        .then((dataUrl): Repl => ({ from: fullMatch, to: `![${alt}](${dataUrl})` }))
+        .catch((): null => null));               // leave the original ref on failure
+    };
+
+    for (const m of markdown.matchAll(/!\[\[([^\]]+)\]\]/g)) {         // ![[img.png|caption]]
+      const inner = m[1];
+      const alt = inner.includes('|') ? inner.split('|').slice(1).join('|') : '';
+      queue(m[0], inner, alt);
+    }
+    for (const m of markdown.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)) {  // ![alt](img.png)
+      queue(m[0], m[2], m[1]);
+    }
+
+    for (const r of await Promise.all(jobs)) {
+      if (r) markdown = markdown.split(r.from).join(r.to);
+    }
+    return markdown;
+  }
+
+  // Read an image from the vault, downscale to <=1600px, return a compressed WebP
+  // data URI. SVGs embed as-is (vector, tiny).
+  async imageToDataUrl(file: TFile): Promise<string> {
+    const ext = file.extension.toLowerCase();
+    const buf = await this.app.vault.readBinary(file);
+    if (ext === 'svg') return `data:image/svg+xml;base64,${arrayBufferToBase64(buf)}`;
+    const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+    const url = URL.createObjectURL(new Blob([buf], { type: mime }));
+    try {
+      const img = await loadImage(url);
+      const MAX = 1600;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('no 2d canvas context');
+      ctx.drawImage(img, 0, 0, w, h);
+      return canvas.toDataURL('image/webp', 0.85);   // WebP: crisp screenshots, small size
+    } finally {
+      URL.revokeObjectURL(url);
     }
   }
 

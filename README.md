@@ -6,8 +6,14 @@ inline, anchored comments (with LaTeX). The note's Markdown — including `$math
 is rendered on the server and gets the Annotex comment layer + KaTeX.
 
 > **This plugin needs an Annotex server** — it's a companion to one you run
-> yourself, and does nothing until you point it at your server's URL. See the
-> **Configure** and **Network use & privacy** sections below.
+> yourself, and does nothing until you point it at your server's URL. **Don't have
+> one? Start your own in one command** on any machine with Node 18+:
+> ```
+> npx annotex-server
+> ```
+> It prints an admin token to paste here and an admin URL to invite colleagues.
+> Details: [annotex-server](https://github.com/epipolarstudios/annotex-server).
+> Then see **Configure** and **Network use & privacy** below.
 
 ## What it does
 
